@@ -100,5 +100,5 @@ async def save_transcript_to_cosmos(call_sid: str, transcript: list, user_data: 
         
 '''
 
-some-command
+some-command : I am using this for testing only as of now !!
 '''
