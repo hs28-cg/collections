@@ -40,9 +40,9 @@ jobs:
 
 
     # # Deploy to Azure Container App
-    # - name: Deploy to Azure Container Apps
-    #   run: |
-    #     az containerapp update \
-    #       --name ${{ env.CONTAINERAPP_NAME }} \
-    #       --resource-group ${{ env.RESOURCE_GROUP }} \
-    #       --image ${{ env.ACR_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ github.run_number }}
+      - name: Deploy to Container App
+        run: |
+          az containerapp update \
+            --collections-generic-pipekat-demo \
+            --resource-group DGEM-Collections-Generic-Dev \
+            --image collectionsgenericregistry.azurecr.io/collections-generic-pipekat-image:${{ github.run_number }}
