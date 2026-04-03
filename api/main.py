@@ -1,3 +1,11 @@
+'''
+This script API calls the postcall-agent responces..
+{case_id}/{summary}
+{case_id}/{action_items}
+{case_id}/{categorization}
+'''
+
+
 import os
 import json
 from fastapi import APIRouter, HTTPException
@@ -9,10 +17,23 @@ load_dotenv()
 
 router = APIRouter(tags=["Postcall Data API"])
 
+'''
+Cosmos-db container name & endpoints
+'''
+
 ENDPOINT = os.getenv("ENDPOINT")
 KEY = os.getenv("KEY")
 DATABASE_NAME = os.getenv("DATABASE_NAME", "user-data")
 CONTAINER_NAME = os.getenv("CONTAINER_NAME", "user-statements")
+
+'''
+Function Summary :
+
+Function connects to azure cosmos db and queries for document matching a given case_id
+It orders the result by the internal timestamp (_ts) so the newest record appears on the top. (most recent converstaion for that case_id).
+`None` is nothing or error is occured.
+
+'''
 
 async def get_db_data(case_id: str):
     if not ENDPOINT or not KEY:
@@ -46,7 +67,10 @@ async def get_db_data(case_id: str):
         print(f"Unexpected error querying Cosmos DB: {e}")
         return None
 
-# 1. API used to fetch the Conversation Transcript for the text box
+'''
+1. This FastAPI endpoint retrieves the transcript associated with a given case_id from a database.
+
+'''
 @router.get("/api/users/{case_id}/transcript")
 async def get_transcript(case_id: str):
     user = await get_db_data(case_id)
@@ -54,7 +78,10 @@ async def get_transcript(case_id: str):
         return {"transcript": user.get("transcript", "")}
     raise HTTPException(status_code=404, detail="User not found")
 
-# 2. API used to fetch the generated Summary for the summary text box
+'''
+2. This FastAPI endpoint retrieves the sumamry associated with a given case_id from a database.
+
+'''
 @router.get("/api/users/{case_id}/summary")
 async def get_summary(case_id: str):
     user = await get_db_data(case_id)
@@ -62,7 +89,10 @@ async def get_summary(case_id: str):
         return {"summary": user.get("summary", "")}
     raise HTTPException(status_code=404, detail="User not found")
 
-# 3. API used to fetch the extracted Action Items for the action items text box
+'''
+3. This FastAPI endpoint retrieves the action_items associated with a given case_id from a database.
+
+'''
 @router.get("/api/users/{case_id}/action_items")
 async def get_action_items(case_id: str):
     user = await get_db_data(case_id)
@@ -70,13 +100,21 @@ async def get_action_items(case_id: str):
         return {"action_items": user.get("action_items", {})}
     raise HTTPException(status_code=404, detail="User not found")
 
-# 4. API used to fetch the Final Categorization for the categorization text box
+'''
+4. This FastAPI endpoint retrieves the categorization associated with a given case_id from a database.
+
+'''
 @router.get("/api/users/{case_id}/categorization")
 async def get_categorization(case_id: str):
     user = await get_db_data(case_id)
     if user:
         return {"categorization": user.get("categorization", "")}
     raise HTTPException(status_code=404, detail="User not found")
+
+'''
+5. This FastAPI endpoint retrieves the status associated with a given case_id from a database.
+
+'''
 
 @router.get("/api/users/{case_id}/status")
 async def get_status(case_id: str):
