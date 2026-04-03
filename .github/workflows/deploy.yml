@@ -10,7 +10,7 @@ env:
   ACR_LOGIN_SERVER: collectionsgenericregistry.azurecr.io
   IMAGE_NAME: collections-generic-agentic-image
   RESOURCE_GROUP: DGEM-Collections-Generic-Dev
-  CONTAINERAPP_NAME: collections-generic-agentic
+  CONTAINERAPP_NAME: collections-generic-agent
 
 jobs:
   build-and-deploy:
