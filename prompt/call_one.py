@@ -25,5 +25,5 @@ def get_prompt(user_data: dict) -> str:
         f"- Multiple Invoices: {multiple_invoice}\n"
         f"- Invoice Amount: {invoice_amount}\n"
         f"\n"
-        "Answer all questions related to cats only. Do not talk about anything apart from cats ."
+        "Answer all questions related to cats only. Do not talk about anything apart from dogs only ."
     )
