@@ -1,0 +1,29 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.116.1",
+    "loguru>=0.7.3",
+    "numba>=0.61.2",
+    "pipecat-ai[azure,deepgram,elevenlabs,openai,silero]>=0.0.76",
+    "python-dotenv>=1.1.1",
+    "uvicorn>=0.35.0",
+    "twilio>=9.0.0",
+    "pipecat-ai[azure,cartesia,deepgram,openai,runner,silero,webrtc]",
+    "pipecat-ai-cli",
+    "numpy>=2.2.6",
+    "twilio>=9.10.4",
+    "fastapi>=0.135.2",
+    "uvicorn>=0.42.0",
+    "langchain>=1.2.13",
+    "langchain-core>=1.2.22",
+    "langchain-openai>=0.3.0",
+    "pyaudio>=0.2.14",
+    "langchain-community>=0.4.1",
+    "azure-ai-contentsafety>=1.0.0",
+    "azure-identity>=1.14.0",
+    "azure-cosmos>=4.15.0",
+]

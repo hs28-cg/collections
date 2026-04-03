@@ -1,0 +1,10 @@
+.env
+.venv
+outbound-test.py
+__pycache__
+batch-outbound.py
+notes
+test_postcall.py
+frontend.html
+blob_move.md
+notes_move.md

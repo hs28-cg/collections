@@ -1,0 +1,125 @@
+trigger:
+  branches:
+    include:
+      - main
+
+variables:
+  # Default → Feature branches (Dev)
+  tag: $(Build.BuildId)
+  acrName: collectionsgenericregistry
+  imageName: collections-generic-pipekat-image
+  resourceGroup: DGEM-Collections-Generic-Dev
+  containerAppName: collections-generic-pipekat-demo
+ 
+  # # Override for main branch → Production
+  # ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  #   acrName: cashappsgenericregistry
+  #   resourceGroup: DGEM_Generic_Cashapp_Demo
+  #   containerAppName: cashapps-generic-backend
+ 
+pool:
+  vmImage: ubuntu-latest
+ 
+steps:
+  - checkout: self
+ 
+  - task: AzureCLI@2
+    displayName: Build, Tag and Push Docker Image to ACR
+    inputs:
+      azureSubscription: cashapps-generic-service-connection # Azure RM service connection (SPN)
+      scriptType: bash
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -euo pipefail
+ 
+        RESOURCE_GROUP=$(resourceGroup)
+        CONTAINERAPP_NAME=$(containerAppName)
+        ACR_NAME=$(acrName)
+        IMAGE_NAME=$(imageName)
+        TAG=$(tag)
+ 
+        echo "=== Docker hardening ==="
+        export DOCKER_BUILDKIT=0
+        export COMPOSE_DOCKER_CLI_BUILD=0
+ 
+        sudo systemctl restart docker
+        sleep 5
+ 
+        docker context use default
+        docker info
+ 
+        echo "=== Resolve ACR login server ==="
+        ACR_LOGIN_SERVER=$(az acr show \
+          --name $ACR_NAME \
+          --query loginServer \
+          -o tsv)
+ 
+        echo "ACR Login Server: $ACR_LOGIN_SERVER"
+ 
+        echo "=== Login to ACR ==="
+        az acr login --name $ACR_NAME
+ 
+        echo "=== Build image ==="
+        docker build \
+          -t $IMAGE_NAME:$TAG \
+          .
+ 
+        echo "=== Tag image ==="
+        docker tag \
+          $IMAGE_NAME:$TAG \
+          $ACR_LOGIN_SERVER/$IMAGE_NAME:$TAG
+ 
+        echo "=== Push image ==="
+        docker push \
+          $ACR_LOGIN_SERVER/$IMAGE_NAME:$TAG
+ 
+        echo "=== Verify push ==="
+        az acr repository list --name $ACR_NAME -o table
+ 
+        echo "=== Completed successfully ==="
+ 
+  - task: AzureCLI@2
+    displayName: Deploy to Azure Container App
+    inputs:
+      scriptType: bash
+      azureSubscription: "cashapps-generic-service-connection"
+      scriptLocation: inlineScript
+      inlineScript: |
+        set -e
+ 
+        # =========================
+        # Variables
+        # =========================
+        RESOURCE_GROUP=$(resourceGroup)
+        CONTAINERAPP_NAME=$(containerAppName)
+        ACR_NAME=$(acrName)
+        IMAGE_NAME=$(imageName)
+        IMAGE_TAG=$(Build.BuildId)
+ 
+        FULL_IMAGE_NAME="${ACR_NAME}.azurecr.io/${IMAGE_NAME}:${IMAGE_TAG}"
+ 
+        echo "Deploying image:"
+        echo $FULL_IMAGE_NAME
+ 
+        # =========================
+        # Configure container settings
+        # =========================
+        az containerapp update \
+          --name $CONTAINERAPP_NAME \
+          --resource-group $RESOURCE_GROUP \
+          --image $FULL_IMAGE_NAME \
+          --revision-suffix build-$(Build.BuildId)
+ 
+        # =========================
+        # Restart Web App
+        # =========================
+        az containerapp update \
+        --name $CONTAINERAPP_NAME \
+        --resource-group $RESOURCE_GROUP \
+        --image $FULL_IMAGE_NAME
+ 
+#       echo "Deployment completed successfully."
+ 
+
+
+
