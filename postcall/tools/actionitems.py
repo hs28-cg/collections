@@ -1,3 +1,11 @@
+'''
+This file is used to structure, validate and document data realted to action_items from call
+
+1. user_action : Describes what the user/ customer needs to do after the call 
+2. agent_action_item: Describes what the agent/ system needs to do after the call
+ 
+'''
+
 from pydantic import BaseModel, Field
 
 class SaveActionItems(BaseModel):

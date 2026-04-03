@@ -1,3 +1,9 @@
+'''
+This function will return a sumamry of the entire trasncript in 2-3 line..
+
+'''
+
+
 from pydantic import BaseModel, Field
 
 class SaveSummary(BaseModel):

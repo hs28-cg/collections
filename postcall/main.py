@@ -1,3 +1,14 @@
+'''
+Post call script, this is the main script that is used by the postcall agent..
+
+Tools inside the tool folder not user : Testing inline tools will later move to the tool call 
+Testing inline tool call for speed 
+Need to test tool call functionality for tool calling 
+'''
+
+
+
+
 import os
 import json
 from dotenv import load_dotenv
@@ -6,6 +17,15 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 
 load_dotenv()
+'''
+Pydantic class for the data validation 
+For postcall, we are considering only 
+1. Sumamry
+2. Action Item
+3. agent_action_items
+4. category
+
+'''
 
 class PostCallAnalysis(BaseModel):
     summary: str = Field(description="A 2-3 sentence summary of the call transcript. Focus on the main reason for the call, any payment agreements made, and customer sentiment.")
@@ -28,6 +48,7 @@ async def process_transcript_and_update_json(call_data: dict):
     
     structured_llm = llm.with_structured_output(PostCallAnalysis)
     
+    # System-State : Prompt.
     prompt = ChatPromptTemplate.from_messages([
         ("system", "You are an AI assistant processing post-call data. Analyze the transcript and extract the requested information."),
         ("human", "User: {user_name}\nTranscript:\n{transcript}")
