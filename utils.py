@@ -155,6 +155,8 @@ async def handle_voice_agent(
     runner = PipelineRunner(handle_sigint=False, force_gc=True)
     await runner.run(task)
 
+    # NOTE : Important Here the context (temp-memory-conversation) is appended to the cosmos right after the call is ended
+    
     # Save transcript to Cosmos DB after runner finishes and unblocks. 
     # This prevents the async database operations (and postcall AI) from being cancelled
     # mid-flight when the websocket is torn down by FastAPI.
@@ -188,6 +190,14 @@ app.add_middleware(
 from api.main import router as api_router
 app.include_router(api_router)
 
+'''
+The init_call endpoint returns a TwiML XML response that instructs Twilio to open a bidirectional media stream over WebSocket. 
+It converts the webhook’s HTTPS URL into a WSS URL and embeds it in a <Stream> tag. 
+When Twilio receives this response, it connects the ongoing phone call to your WebSocket endpoint (/ws).
+
+'''
+
+
 
 @app.post("/")
 async def init_call():
@@ -202,6 +212,12 @@ async def init_call():
 </Response>"""
     
     return HTMLResponse(content=content, media_type="application/xml")
+
+'''
+The make_call function uses Twilio to initiate an outbound phone call to the provided user_phone number. 
+It sends call instructions via a webhook URL and stores the call’s SID in active_calls for tracking. 
+It returns a confirmation message with the generated call_sid.
+'''
 
 
 @app.post("/call")
@@ -227,6 +243,12 @@ async def make_call(request: Dict[str, Any]):
 
     return {"status": "Call initiated", "call_sid": call.sid}
 
+'''
+The websocket_endpoint establishes a WebSocket connection and waits for initial Twilio media stream data. 
+It extracts the streamSid and callSid from the incoming messages, retrieves any stored call-related metadata, 
+and then hands control over to handle_voice_agent to process real‑time audio and agent interactions.
+
+'''
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

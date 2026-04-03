@@ -71,16 +71,20 @@ async def save_transcript_to_cosmos(call_sid: str, transcript: list, user_data: 
             })
             
             # --- POSTCALL INTEGRATION ---
+            # Same data is send to the postcall here in the document
             try:
                 document["postcall_status"] = "started"
                 print(f"Running postcall analysis for {call_sid}...", flush=True)
                 # Eagerly save the transcript with the started status
                 await container.upsert_item(document)
+                # Entire data including the trasncript is updated to the cosmosdb 
 
                 # Execute LLM to generate summary, action items, and categorization
+                # NOTE : Right after updating the document to cosmos db it is send to the postcall agent as well to process it 
                 from postcall.main import process_transcript_and_update_json
                 document = await process_transcript_and_update_json(document)
                 document["postcall_status"] = "completed"
+                # Once the processing is finished the docuemnt is marked as completed
                     
             except Exception as e:
                 document["postcall_status"] = "failed"
@@ -98,7 +102,3 @@ async def save_transcript_to_cosmos(call_sid: str, transcript: list, user_data: 
         
         
         
-'''
-
-some-command : I am using this for testing only as of now !!
-'''
