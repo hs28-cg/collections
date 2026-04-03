@@ -95,3 +95,10 @@ async def save_transcript_to_cosmos(call_sid: str, transcript: list, user_data: 
         print(f"❌ Failed to save transcript to Cosmos DB. Error: {e.message}")
     except Exception as e:
         print(f"❌ Unexpected Error saving to Cosmos: {e}")
+        
+        
+        
+'''
+
+some-command
+'''
